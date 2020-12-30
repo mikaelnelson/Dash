@@ -1,24 +1,33 @@
 
+# Libraries
+list( APPEND LIBS lvgl )
+list( APPEND LIBS lvgl_tft )
+
+# Source Files
+list( APPEND SRC_FILES main.c )
+list( APPEND SRC_FILES stepper_gauge.c )
+list( APPEND SRC_FILES can_j1939.c )
+list( APPEND SRC_FILES lib/pubsub-c/src/pubsub.c )
+
+# Include Directories
+
 
 idf_component_register(
-        SRCS
-        "main.c"
-        "stepper_gauge.c"
-        "can_j1939.c"
-
-        INCLUDE_DIRS
-        ""
+        SRCS            ${SRC_FILES}
+        INCLUDE_DIRS    ${INC_DIRS}
+        REQUIRES        ${LIBS}
 )
 
 # Build static library, do not build test executables
 option(BUILD_SHARED_LIBS OFF)
 option(BUILD_TESTING OFF)
 
-# Import tinyxml2 targets
+# Import Targets
 add_subdirectory(lib/libj1939)
 
-# Include J1939 Directories
+# Include Directories
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/libj1939/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/pubsub-c/src)
 
-# Link tinyxml2 to main component
+# Link Target To Main Component
 target_link_libraries(${COMPONENT_LIB} PUBLIC j1939)

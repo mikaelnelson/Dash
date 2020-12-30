@@ -58,3 +58,5 @@ cmake-build-release/
 .DS_Store
 
 external/
+
+build/

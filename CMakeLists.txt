@@ -4,5 +4,10 @@ cmake_minimum_required(VERSION 3.5)
 
 include(ExternalProject)
 
-include(/Users/mikaelnelson/esp/esp-idf/tools/cmake/project.cmake)
+include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+
+list( APPEND EXTRA_COMPONENT_DIRS components/lvgl)
+list( APPEND EXTRA_COMPONENT_DIRS components/lvgl_drivers/lvgl_tft )
+list( APPEND EXTRA_COMPONENT_DIRS components/lvgl_drivers )
+
 project(Dash C CXX ASM)

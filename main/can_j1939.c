@@ -8,6 +8,7 @@
 #include <time.h>
 #include <sys/time.h>
 
+#include <pubsub.h>
 #include <j1939.h>
 
 #include "freertos/FreeRTOS.h"
@@ -59,7 +60,7 @@ void can_j1939_start( void )
     };
 
     /* Configure Can Bus*/
-    can_general_config_t g_config = CAN_GENERAL_CONFIG_DEFAULT(GPIO_NUM_21, GPIO_NUM_22, CAN_MODE_NORMAL);
+    can_general_config_t g_config = CAN_GENERAL_CONFIG_DEFAULT(GPIO_NUM_2, GPIO_NUM_4, CAN_MODE_NORMAL);
     can_timing_config_t t_config = CAN_TIMING_CONFIG_1MBITS();
     can_filter_config_t f_config = CAN_FILTER_CONFIG_ACCEPT_ALL();
 
@@ -106,7 +107,6 @@ void can_j1939_stop( void )
  ********************************************/
 int j1939_cansend( uint32_t id, uint8_t * data, uint8_t len )
 {
-    int ret;
     can_message_t message;
 
     // Setup Message
