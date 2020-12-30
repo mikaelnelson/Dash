@@ -54,3 +54,7 @@ dkms.conf
 .idea/
 
 cmake-build-release/
+
+.DS_Store
+
+external/
