@@ -1,0 +1,3 @@
+[submodule "main/lib/libj1939"]
+	path = main/lib/libj1939
+	url = https://github.com/paoloteti/libj1939.git

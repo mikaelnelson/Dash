@@ -2,14 +2,14 @@
 /*********************
  *      INCLUDES
  *********************/
+#include <j1939.h>
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/timers.h"
 
 #include "driver/gpio.h"
 #include "driver/can.h"
-
-#include <j1939.h>
 
 #include "can_j1939.h"
 

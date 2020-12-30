@@ -10,11 +10,15 @@ idf_component_register(
         ""
 )
 
-# Include Directories
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/install/libj1939/include/)
+# Build static library, do not build test executables
+option(BUILD_SHARED_LIBS OFF)
+option(BUILD_TESTING OFF)
 
-## Add Dependencies
-add_dependencies(__idf_main libj1939)
-#
-## Link Libraries
-target_link_libraries(__idf_main ${CMAKE_CURRENT_SOURCE_DIR}/external/install/libj1939/lib/libj1939.a)
+# Import tinyxml2 targets
+add_subdirectory(lib/libj1939)
+
+# Include J1939 Directories
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/libj1939/include)
+
+# Link tinyxml2 to main component
+target_link_libraries(${COMPONENT_LIB} PUBLIC j1939)
