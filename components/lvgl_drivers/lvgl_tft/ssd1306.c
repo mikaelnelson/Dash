@@ -106,7 +106,12 @@ void ssd1306_init()
     i2c_master_write_byte(cmd, 0x14, true);
     i2c_master_write_byte(cmd, OLED_CMD_SET_SEGMENT_REMAP, true);
     i2c_master_write_byte(cmd, OLED_CMD_SET_COM_SCAN_MODE_REMAP, true);
+    i2c_master_write_byte(cmd, OLED_CMD_SET_MUX_RATIO, true);
+    i2c_master_write_byte(cmd, CONFIG_LVGL_DISPLAY_HEIGHT - 1, true);
     i2c_master_write_byte(cmd, OLED_CMD_SET_CONTRAST, true);
+
+    i2c_master_write_byte(cmd, OLED_CMD_SET_COM_PIN_MAP, true);
+    i2c_master_write_byte(cmd, 0x02, true);
 
 #if defined CONFIG_LVGL_INVERT_DISPLAY
     i2c_master_write_byte(cmd, OLED_CMD_DISPLAY_INVERTED, true); // Inverted display

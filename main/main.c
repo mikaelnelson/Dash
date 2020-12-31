@@ -13,6 +13,7 @@
 #include "freertos/task.h"
 #include "esp_system.h"
 
+#include "display.h"
 #include "stepper_gauge.h"
 #include "can_j1939.h"
 
@@ -23,12 +24,16 @@ void app_main()
     ps_init();
 
     // Start Modules
-    can_j1939_start();
+    display_start();
+//    stepper_gauge_start();
+//    can_j1939_start();
 
-    // Handle Messages
-
-    // Stop Modules
-    can_j1939_stop();
-
-    esp_restart();
+//    // Handle Messages
+//
+//    // Stop Modules
+//    can_j1939_stop();
+//    stepper_gauge_stop();
+//    display_stop();
+//
+//    esp_restart();
 }

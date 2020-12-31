@@ -24,10 +24,10 @@
 
 #define PIN_CNT             4
 
-#define PIN_1               GPIO_NUM_34
-#define PIN_2               GPIO_NUM_35
-#define PIN_3               GPIO_NUM_36
-#define PIN_4               GPIO_NUM_39
+#define PIN_1               GPIO_NUM_18
+#define PIN_2               GPIO_NUM_19
+#define PIN_3               GPIO_NUM_21
+#define PIN_4               GPIO_NUM_23
 
 /**********************
  *      TYPEDEFS
@@ -100,10 +100,10 @@ void stepper_gauge_start( void )
     // Configure GPIOs
     config.intr_type    = GPIO_INTR_DISABLE;
     config.mode         = GPIO_MODE_OUTPUT;
-    config.pin_bit_mask = ( ( 1 << PIN_1 ) |
-                            ( 1 << PIN_2 ) |
-                            ( 1 << PIN_3 ) |
-                            ( 1 << PIN_4 ) );
+    config.pin_bit_mask = ( ( 1ULL << PIN_1 ) |
+                            ( 1ULL << PIN_2 ) |
+                            ( 1ULL << PIN_3 ) |
+                            ( 1ULL << PIN_4 ) );
     config.pull_down_en = 0;
     config.pull_up_en   = 0;
 

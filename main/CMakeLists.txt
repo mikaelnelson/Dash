@@ -2,11 +2,13 @@
 # Libraries
 list( APPEND LIBS lvgl )
 list( APPEND LIBS lvgl_tft )
+list( APPEND LIBS lvgl_drivers )
 
 # Source Files
 list( APPEND SRC_FILES main.c )
 list( APPEND SRC_FILES stepper_gauge.c )
 list( APPEND SRC_FILES can_j1939.c )
+list( APPEND SRC_FILES display.c )
 list( APPEND SRC_FILES lib/pubsub-c/src/pubsub.c )
 
 # Include Directories
