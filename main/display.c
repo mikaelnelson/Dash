@@ -98,23 +98,7 @@ void display_start( void )
     lv_obj_set_size( g_test_label, 32, 16 );
     lv_obj_set_pos( g_test_label, 0, 0 );
     lv_label_set_text( g_test_label, "[TEST 10]" );
-
-    // Draw Line Border
-    static lv_point_t line_points[] = { {0, 0}, {127, 0}, {127, 31}, {0, 31}, {0, 0} };
-
-    /*Create style*/
-    static lv_style_t style_line;
-    lv_style_init(&style_line);
-    lv_style_set_line_width(&style_line, LV_STATE_DEFAULT, 1);
-//    lv_style_set_line_color(&style_line, LV_STATE_DEFAULT, LV_COLOR_BLACK);
-
-    /*Create a line and apply the new style*/
-    lv_obj_t * line1;
-    line1 = lv_line_create(lv_scr_act(), NULL);
-    lv_line_set_points(line1, line_points, 5);     /*Set the points*/
-    lv_obj_add_style(line1, LV_LINE_PART_MAIN, &style_line);     /*Set the points*/
-    lv_obj_set_pos( line1, 0, 0 );
-
+    
     // Setup GUI Tick Timer
     const esp_timer_create_args_t lvgl_tick_timer_args =
             {
