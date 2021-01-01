@@ -41,10 +41,7 @@
 static TimerHandle_t        g_update_timer;
 
 static SemaphoreHandle_t    g_display_lock;
-//static lv_color_t           g_display_buf1[DISP_BUF_SIZE];
-//static lv_color_t           g_display_buf2[DISP_BUF_SIZE];
 static uint8_t              g_display_buf1[CONFIG_LVGL_DISPLAY_WIDTH*CONFIG_LVGL_DISPLAY_HEIGHT/8];
-static uint8_t              g_display_buf2[CONFIG_LVGL_DISPLAY_WIDTH*CONFIG_LVGL_DISPLAY_HEIGHT/8];
 static lv_disp_buf_t        g_display_disp_buf;
 static lv_disp_drv_t        g_display_disp_drv;
 static uint32_t             g_display_size_in_px;
@@ -68,7 +65,6 @@ _Noreturn static void display_task( void * params );
 void log_callback(lv_log_level_t level, const char * file, uint32_t line, const char * description, const char * message)
 {
     ESP_LOGI(TAG, "%s %d: %s %s", file, line, description, message);
-
 }
 
 
@@ -99,9 +95,25 @@ void display_start( void )
 
     // Setup Test Label
     g_test_label = lv_label_create( lv_scr_act(), NULL );
-    lv_obj_set_size( g_test_label, 32, 32 );
+    lv_obj_set_size( g_test_label, 32, 16 );
     lv_obj_set_pos( g_test_label, 0, 0 );
-    lv_label_set_text( g_test_label, "####" );
+    lv_label_set_text( g_test_label, "[TEST 10]" );
+
+    // Draw Line Border
+    static lv_point_t line_points[] = { {0, 0}, {127, 0}, {127, 31}, {0, 31}, {0, 0} };
+
+    /*Create style*/
+    static lv_style_t style_line;
+    lv_style_init(&style_line);
+    lv_style_set_line_width(&style_line, LV_STATE_DEFAULT, 1);
+//    lv_style_set_line_color(&style_line, LV_STATE_DEFAULT, LV_COLOR_BLACK);
+
+    /*Create a line and apply the new style*/
+    lv_obj_t * line1;
+    line1 = lv_line_create(lv_scr_act(), NULL);
+    lv_line_set_points(line1, line_points, 5);     /*Set the points*/
+    lv_obj_add_style(line1, LV_LINE_PART_MAIN, &style_line);     /*Set the points*/
+    lv_obj_set_pos( line1, 0, 0 );
 
     // Setup GUI Tick Timer
     const esp_timer_create_args_t lvgl_tick_timer_args =
@@ -116,26 +128,32 @@ void display_start( void )
     //Otherwise there can be problem such as memory corruption and so on
     xTaskCreatePinnedToCore(display_task, "display_task", 4096*2, NULL, 0, NULL, 1);
 
-//    g_update_timer = xTimerCreate
-//        (
-//        "update_timer",
-//        (1000 / portTICK_PERIOD_MS),
-//        pdTRUE,
-//        0,
-//        display_update_timer
-//        );
-//
-//    xTimerStart( g_update_timer, 0 );
+    g_update_timer = xTimerCreate
+        (
+        "update_timer",
+        (1000 / portTICK_PERIOD_MS),
+        pdTRUE,
+        0,
+        display_update_timer
+        );
+
+    xTimerStart( g_update_timer, 0 );
+}
+
+static void display_update_timer( TimerHandle_t pxTimer )
+{
+    static int count = 0;
+
+    //Try to lock the semaphore, if success, call lvgl stuff
+    if (xSemaphoreTake(g_display_lock, (TickType_t)10) == pdTRUE) {
+        lv_label_set_text_fmt( g_test_label, "[TEST %d]", count++ );
+        xSemaphoreGive(g_display_lock);
+    }
 }
 
 void display_stop( void )
 {
     xTimerStop( g_update_timer, 0 );
-}
-
-static void display_update_timer( TimerHandle_t pxTimer )
-{
-
 }
 
 static void display_tick_timer( void * params )

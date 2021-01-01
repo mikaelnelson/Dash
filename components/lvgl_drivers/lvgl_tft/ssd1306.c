@@ -102,27 +102,51 @@ void ssd1306_init()
     i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS << 1) | I2C_MASTER_WRITE, true);
     i2c_master_write_byte(cmd, OLED_CONTROL_BYTE_CMD_STREAM, true);
 
-    i2c_master_write_byte(cmd, OLED_CMD_SET_CHARGE_PUMP, true);
-    i2c_master_write_byte(cmd, 0x14, true);
-    i2c_master_write_byte(cmd, OLED_CMD_SET_SEGMENT_REMAP, true);
-    i2c_master_write_byte(cmd, OLED_CMD_SET_COM_SCAN_MODE_REMAP, true);
+    // Recommended Software Init Flow
+    // 1. Set Mux Ratio A8 XX
     i2c_master_write_byte(cmd, OLED_CMD_SET_MUX_RATIO, true);
     i2c_master_write_byte(cmd, CONFIG_LVGL_DISPLAY_HEIGHT - 1, true);
-    i2c_master_write_byte(cmd, OLED_CMD_SET_CONTRAST, true);
 
+    // 2. Set Display Offset D3 XX
+    i2c_master_write_byte(cmd, OLED_CMD_SET_DISPLAY_OFFSET, true);
+    i2c_master_write_byte(cmd, 64 - CONFIG_LVGL_DISPLAY_HEIGHT, true);
+
+    // 3. Set Display Start Line 40
+    i2c_master_write_byte(cmd, OLED_CMD_SET_DISPLAY_START_LINE | 0, true);
+
+    // 4. Set Segment Remap A0/A1
+    i2c_master_write_byte(cmd, OLED_CMD_SET_SEGMENT_REMAP, true);
+
+    // 5. Set COM Output Scan Direction C0/C8
+    i2c_master_write_byte(cmd, OLED_CMD_SET_COM_SCAN_MODE_REMAP, true);
+
+    // 6. Set COM Pins Hardware Config DA 02
     i2c_master_write_byte(cmd, OLED_CMD_SET_COM_PIN_MAP, true);
-    i2c_master_write_byte(cmd, 0x02, true);
+    i2c_master_write_byte(cmd, ((0x02 << 4) | 0x02), true);
 
+    // 7. Set Contrast Control 81 7F
+    i2c_master_write_byte(cmd, OLED_CMD_SET_CONTRAST, true);
+    i2c_master_write_byte(cmd, 0x7F, true);
+
+    // 8. Disable Entire Display On A4
+    // 9. Set Normal Display A6
 #if defined CONFIG_LVGL_INVERT_DISPLAY
     i2c_master_write_byte(cmd, OLED_CMD_DISPLAY_INVERTED, true); // Inverted display
 #else
     i2c_master_write_byte(cmd, OLED_CMD_DISPLAY_NORMAL, true); // Non-inverted display
 #endif
 
+    // 10. Set OSC Frequency D5 80
+    i2c_master_write_byte(cmd, OLED_CMD_SET_DISPLAY_CLK_DIV, true);
+    i2c_master_write_byte(cmd, 0x80, true);
 
-    i2c_master_write_byte(cmd, 0xFF, true);
+    // 11. Enable charge pump regulator 8D 14
+    i2c_master_write_byte(cmd, OLED_CMD_SET_CHARGE_PUMP, true);
+    i2c_master_write_byte(cmd, 0x14, true);
 
+    // 12. Display On AF
     i2c_master_write_byte(cmd, OLED_CMD_DISPLAY_ON, true);
+
     i2c_master_stop(cmd);
 
     ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
