@@ -1,12 +1,12 @@
 [submodule "main/lib/libj1939"]
 	path = main/lib/libj1939
 	url = https://github.com/paoloteti/libj1939.git
-[submodule "main/lib/pubsub-c"]
-	path = main/lib/pubsub-c
-	url = https://github.com/jaracil/pubsub-c.git
 [submodule "components/lvgl/lvgl"]
 	path = components/lvgl/lvgl
 	url = https://github.com/lvgl/lvgl.git
 [submodule "components/minmea/minmea"]
 	path = components/minmea/minmea
 	url = https://github.com/kosma/minmea.git
+[submodule "components/pubsub-c"]
+	path = components/pubsub-c
+	url = https://github.com/jaracil/pubsub-c.git
