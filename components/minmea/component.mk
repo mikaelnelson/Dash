@@ -1,0 +1,11 @@
+#
+# Component Makefile
+#
+
+# Use Compatability Include
+ifndef MINMEA_INCLUDE_COMPAT
+CFLAGS += -DMINMEA_INCLUDE_COMPAT
+endif
+
+COMPONENT_SRCDIRS := minmea
+COMPONENT_ADD_INCLUDEDIRS := $(COMPONENT_SRCDIRS) .

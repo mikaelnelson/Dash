@@ -14,6 +14,7 @@
 #include "esp_system.h"
 
 #include "display.h"
+#include "gps.h"
 #include "stepper_gauge.h"
 #include "can_j1939.h"
 
@@ -25,6 +26,7 @@ void app_main()
 
     // Start Modules
     display_start();
+    gps_start();
 //    stepper_gauge_start();
 //    can_j1939_start();
 

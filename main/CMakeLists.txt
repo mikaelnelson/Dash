@@ -3,11 +3,13 @@
 list( APPEND LIBS lvgl )
 list( APPEND LIBS lvgl_tft )
 list( APPEND LIBS lvgl_drivers )
+list( APPEND LIBS minmea)
 
 # Source Files
 list( APPEND SRC_FILES main.c )
 list( APPEND SRC_FILES stepper_gauge.c )
 list( APPEND SRC_FILES can_j1939.c )
+list( APPEND SRC_FILES gps.c )
 list( APPEND SRC_FILES display.c )
 list( APPEND SRC_FILES lib/pubsub-c/src/pubsub.c )
 
