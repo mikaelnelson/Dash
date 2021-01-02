@@ -3,6 +3,9 @@
  */
 #include <string.h>
 
+#include <minmea/minmea.h>
+#include <pubsub.h>
+
 #include "esp_system.h"
 #include "esp_log.h"
 
@@ -13,7 +16,7 @@
 #include "driver/uart.h"
 
 #include "gps.h"
-#include "minmea/minmea.h"
+
 
 /*
  * Defines
@@ -202,6 +205,7 @@ _Noreturn static void gps_parse_task( void * params )
                             if( 0 == minmea_gettime(&ts, &frame.date, &frame.time) )
                             {
                                 ESP_LOGI(TAG, "Time: %ld", ts.tv_sec);
+                                PUB_INT("gps.time", ts.tv_sec);
                             }
                         }
                     }
@@ -214,6 +218,7 @@ _Noreturn static void gps_parse_task( void * params )
                         if( minmea_parse_vtg( &frame, (const char *)gps_sentence ) )
                         {
                             ESP_LOGI(TAG, "Speed (KPH): %f", minmea_tofloat( &frame.speed_kph ));
+                            PUB_DBL("gps.speed", minmea_tofloat( &frame.speed_kph ));
                         }
                     }
                     break;

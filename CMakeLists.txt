@@ -8,5 +8,7 @@ list( APPEND EXTRA_COMPONENT_DIRS components/lvgl)
 list( APPEND EXTRA_COMPONENT_DIRS components/lvgl_drivers/lvgl_tft )
 list( APPEND EXTRA_COMPONENT_DIRS components/lvgl_drivers )
 list( APPEND EXTRA_COMPONENT_DIRS components/minmea )
+list( APPEND EXTRA_COMPONENT_DIRS components/pubsub-c )
+
 
 project(Dash C CXX ASM)

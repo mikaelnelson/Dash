@@ -7,3 +7,6 @@
 [submodule "components/minmea/minmea"]
 	path = components/minmea/minmea
 	url = https://github.com/kosma/minmea.git
+[submodule "components/pubsub-c/pubsub-c"]
+	path = components/pubsub-c/pubsub-c
+	url = https://github.com/jaracil/pubsub-c.git

@@ -5,6 +5,10 @@
 #include <time.h>
 #include <math.h>
 
+#include <pubsub.h>
+#include <lvgl/lvgl.h>
+#include <lvgl_helpers.h>
+
 #include "esp_system.h"
 #include "esp_log.h"
 
@@ -12,9 +16,6 @@
 #include "freertos/task.h"
 #include "freertos/timers.h"
 #include "freertos/semphr.h"
-
-#include <lvgl/lvgl.h>
-#include <lvgl_helpers.h>
 
 #include "display.h"
 
@@ -38,8 +39,6 @@
 /**********************
  *     GLOBALS
  **********************/
-static TimerHandle_t        g_update_timer;
-
 static SemaphoreHandle_t    g_display_lock;
 static uint8_t              g_display_buf1[CONFIG_LVGL_DISPLAY_WIDTH*CONFIG_LVGL_DISPLAY_HEIGHT/8];
 static lv_disp_buf_t        g_display_disp_buf;
@@ -58,9 +57,10 @@ static lv_obj_t           * g_test_label;
 /**********************
  *    PROTOTYPES
  **********************/
-static void display_update_timer( TimerHandle_t pxTimer );
 static void display_tick_timer( void * params );
 _Noreturn static void display_task( void * params );
+_Noreturn static void display_msg_task( void * params );
+
 
 void log_callback(lv_log_level_t level, const char * file, uint32_t line, const char * description, const char * message)
 {
@@ -111,33 +111,13 @@ void display_start( void )
     //If you want to use a task to create the graphic, you NEED to create a Pinned task
     //Otherwise there can be problem such as memory corruption and so on
     xTaskCreatePinnedToCore(display_task, "display_task", 4096*2, NULL, 0, NULL, 1);
+    xTaskCreatePinnedToCore(display_msg_task, "display_msg_task", 4096*2, NULL, 0, NULL, 1);
 
-    g_update_timer = xTimerCreate
-        (
-        "update_timer",
-        (1000 / portTICK_PERIOD_MS),
-        pdTRUE,
-        0,
-        display_update_timer
-        );
 
-    xTimerStart( g_update_timer, 0 );
-}
-
-static void display_update_timer( TimerHandle_t pxTimer )
-{
-    static int count = 0;
-
-    //Try to lock the semaphore, if success, call lvgl stuff
-    if (xSemaphoreTake(g_display_lock, (TickType_t)10) == pdTRUE) {
-        lv_label_set_text_fmt( g_test_label, "[TEST %d]", count++ );
-        xSemaphoreGive(g_display_lock);
-    }
 }
 
 void display_stop( void )
 {
-    xTimerStop( g_update_timer, 0 );
 }
 
 static void display_tick_timer( void * params )
@@ -160,4 +140,26 @@ _Noreturn static void display_task( void * params )
 
     //A task should NEVER return
     vTaskDelete(NULL);
+}
+
+_Noreturn static void display_msg_task( void * params )
+{
+    ps_subscriber_t *s = ps_new_subscriber(10, STRLIST( "gps.time",  "gps.speed" ));
+
+    ps_msg_t *msg = NULL;
+
+    while(true) {
+        msg = ps_get(s, 5000);
+        if (msg != NULL) {
+            if( 0 == strcmp("gps.time", msg->topic ) ) {
+                if (xSemaphoreTake(g_display_lock, (TickType_t)10) == pdTRUE) {
+                    lv_label_set_text_fmt( g_test_label, "[TIME: %d]", msg->int_val );
+                    xSemaphoreGive(g_display_lock);
+                }
+            }
+
+            ps_unref_msg(msg);
+        }
+    }
+    ps_free_subscriber(s);
 }
