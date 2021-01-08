@@ -9,6 +9,7 @@ list( APPEND LIBS pubsub-c)
 # Source Files
 list( APPEND SRC_FILES main.c )
 list( APPEND SRC_FILES stepper_gauge.c )
+list( APPEND SRC_FILES speedometer_gauge.c )
 list( APPEND SRC_FILES can_j1939.c )
 list( APPEND SRC_FILES gps.c )
 list( APPEND SRC_FILES display.c )

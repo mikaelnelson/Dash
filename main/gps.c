@@ -96,7 +96,7 @@ void gps_start( void )
     //Create a task to handler UART event from ISR
     xTaskCreate( gps_read_task, "gps_read_task", 2048, &g_priv, 12, NULL );
 
-    xTaskCreate( gps_parse_task, "gps_parse_task", 2048, &g_priv, 12, NULL );
+    xTaskCreate( gps_parse_task, "gps_parse_task", 4 * 1024, &g_priv, 12, NULL );
 }
 
 void gps_stop( void )
@@ -180,8 +180,7 @@ _Noreturn static void gps_parse_task( void * params )
     char                    gps_sentence[GPS_SENTENCE_MAX_SZ + 1];
     enum minmea_sentence_id id;
 
-    for(;;)
-    {
+    for(;;) {
         // Wait For Data
         xSemaphoreTake( priv->gps_sentence_trigger, portMAX_DELAY );
 
@@ -191,41 +190,55 @@ _Noreturn static void gps_parse_task( void * params )
         xSemaphoreGive( priv->gps_sentence_lock );
 
         id = minmea_sentence_id((const char *)gps_sentence, false);
-        switch( id )
-            {
-                case MINMEA_SENTENCE_RMC:
-                    {
-                        struct minmea_sentence_rmc frame;
+        switch( id ) {
+            case MINMEA_SENTENCE_RMC: {
+                struct minmea_sentence_rmc frame;
 
-                        if( minmea_parse_rmc( &frame, (const char *)gps_sentence ) )
-                        {
-                            struct timespec ts;
+                if( minmea_parse_rmc( &frame, (const char *)gps_sentence ) ) {
+                    struct timespec ts;
 
-                            // Update Time
-                            if( 0 == minmea_gettime(&ts, &frame.date, &frame.time) )
-                            {
-                                ESP_LOGI(TAG, "Time: %ld", ts.tv_sec);
-                                PUB_INT("gps.time", ts.tv_sec);
-                            }
-                        }
+                    // Update Time
+                    if( 0 == minmea_gettime(&ts, &frame.date, &frame.time) ) {
+//                        ESP_LOGI(TAG, "Time: %ld", ts.tv_sec);
+                        PUB_INT("gps.time", ts.tv_sec);
                     }
-                    break;
-
-                case MINMEA_SENTENCE_VTG:
-                    {
-                        struct minmea_sentence_vtg frame;
-
-                        if( minmea_parse_vtg( &frame, (const char *)gps_sentence ) )
-                        {
-                            ESP_LOGI(TAG, "Speed (KPH): %f", minmea_tofloat( &frame.speed_kph ));
-                            PUB_DBL("gps.speed", minmea_tofloat( &frame.speed_kph ));
-                        }
-                    }
-                    break;
-
-                default:
-                    break;
+                }
             }
+            break;
+
+            case MINMEA_SENTENCE_VTG: {
+                struct minmea_sentence_vtg frame;
+
+                if( minmea_parse_vtg( &frame, (const char *)gps_sentence ) )
+                {
+//                    ESP_LOGI(TAG, "Speed (KPH): %f", minmea_tofloat( &frame.speed_kph ));
+                    PUB_DBL("gps.speed", minmea_tofloat( &frame.speed_kph ));
+                }
+            }
+            break;
+
+            case MINMEA_SENTENCE_GGA: {
+                struct minmea_sentence_gga frame;
+
+                if( minmea_parse_gga( &frame, (const char *)gps_sentence )) {
+//                    ESP_LOGI(TAG, "fix_quality: %d  sat_tracked: %d", frame.fix_quality, frame.satellites_tracked);
+                }
+            }
+            break;
+
+            case MINMEA_SENTENCE_GSA: {
+                struct minmea_sentence_gsa frame;
+
+                if( minmea_parse_gsa( &frame, gps_sentence ) ) {
+//                    ESP_LOGI(TAG, "sats: %d %d %d %d %d %d %d %d %d %d %d %d", frame.sats[0], frame.sats[1], frame.sats[2], frame.sats[3], frame.sats[4], frame.sats[5], frame.sats[6], frame.sats[7], frame.sats[8], frame.sats[9], frame.sats[10], frame.sats[11]);
+                }
+
+            }
+            break;
+
+            default:
+            break;
+        }
     }
 
     vTaskDelete(NULL);

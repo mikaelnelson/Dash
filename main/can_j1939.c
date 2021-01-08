@@ -11,6 +11,8 @@
 #include <pubsub.h>
 #include <j1939.h>
 
+#include "esp_log.h"
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/timers.h"
@@ -23,6 +25,7 @@
 /*********************
  *      DEFINES
  *********************/
+#define TAG "CAN_J1939"
 
 /**********************
  *      TYPEDEFS
@@ -46,6 +49,8 @@ void can_j1939_start( void )
     int             rc;
     const uint8_t   src = 0x80;
 
+    ESP_LOGI(TAG, "can j1939 start");
+
     ecu_name_t name = {
             .fields.arbitrary_address_capable = J1939_NO_ADDRESS_CAPABLE,
             .fields.industry_group = J1939_INDUSTRY_GROUP_INDUSTRIAL,
@@ -60,27 +65,32 @@ void can_j1939_start( void )
     };
 
     /* Configure Can Bus*/
+    ESP_LOGI(TAG, "configure CAN bus");
     can_general_config_t g_config = CAN_GENERAL_CONFIG_DEFAULT(GPIO_NUM_2, GPIO_NUM_4, CAN_MODE_NORMAL);
     can_timing_config_t t_config = CAN_TIMING_CONFIG_1MBITS();
     can_filter_config_t f_config = CAN_FILTER_CONFIG_ACCEPT_ALL();
 
+
+
     /* Install CAN Driver */
+    ESP_LOGI(TAG, "Install CAN driver");
     success = (can_driver_install(&g_config, &t_config, &f_config) == ESP_OK);
-    assert( success );
+    ESP_LOGI(TAG, "success: %d", success);
 
     /* Start CAN Driver */
     if( success ) {
+        ESP_LOGI(TAG, "Start CAN driver");
         success = (can_start() == ESP_OK);
-        assert( success );
     }
 
     /* Claim Address */
     if( success ) {
+        ESP_LOGI(TAG, "can j1939 claim address");
         rc = j1939_address_claim(src, name);
         success = ( -1 != rc );
-        assert( success );
 
         if( success ) {
+            ESP_LOGI(TAG, "can j1939 claimed");
             j1939_address_claimed(src, name);
         }
     }
@@ -92,12 +102,10 @@ void can_j1939_stop( void )
 
     /* Stop CAN Driver */
     success = (can_stop() == ESP_OK);
-    assert( success );
 
     /* Uninstall CAN Driver */
     if( success ) {
         success = (can_driver_uninstall() == ESP_OK);
-        assert( success );
     }
 }
 

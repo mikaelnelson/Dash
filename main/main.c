@@ -7,6 +7,7 @@
    CONDITIONS OF ANY KIND, either express or implied.
 */
 #include <stdio.h>
+#include <time.h>
 #include <pubsub.h>
 
 #include "freertos/FreeRTOS.h"
@@ -16,6 +17,7 @@
 #include "display.h"
 #include "gps.h"
 #include "stepper_gauge.h"
+#include "speedometer_gauge.h"
 #include "can_j1939.h"
 
 
@@ -24,11 +26,16 @@ void app_main()
     // Initialize PubSub
     ps_init();
 
+    // Setup Time Zone
+    setenv("TZ", "CST6CDT,M3.2.0,M11.1.0", 1);
+    tzset();
+
     // Start Modules
     display_start();
     gps_start();
-//    stepper_gauge_start();
-//    can_j1939_start();
+    stepper_gauge_start();
+    speedometer_gauge_start();
+    can_j1939_start();
 
 //    // Handle Messages
 //

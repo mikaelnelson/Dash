@@ -47,8 +47,23 @@ static uint32_t             g_display_size_in_px;
 
 static esp_timer_handle_t   g_display_periodic_timer;
 
-static lv_obj_t           * g_test_label;
-
+/*
+ * Pages:
+ *  Default
+ *      - Time
+ *      - Range
+ *  Odometer
+ *  Time
+ *  Power
+ *      - Voltage
+ *      - Current
+ *      - Range
+ */
+static lv_obj_t           * g_time_label;
+static lv_obj_t           * g_range_label;
+static lv_obj_t           * g_odometer_label;
+static lv_obj_t           * g_voltage_label;
+static lv_obj_t           * g_current_label;
 
 /**********************
  *     CONSTANTS
@@ -93,12 +108,28 @@ void display_start( void )
     g_display_disp_drv.buffer = &g_display_disp_buf;
     lv_disp_drv_register(&g_display_disp_drv);
 
-    // Setup Test Label
-    g_test_label = lv_label_create( lv_scr_act(), NULL );
-    lv_obj_set_size( g_test_label, 32, 16 );
-    lv_obj_set_pos( g_test_label, 0, 0 );
-    lv_label_set_text( g_test_label, "[TEST 10]" );
-    
+
+    // Create Time
+    g_time_label = lv_label_create( lv_scr_act(), NULL );
+    lv_label_set_align( g_time_label, LV_LABEL_ALIGN_CENTER );
+    lv_obj_align(g_time_label, NULL, LV_ALIGN_IN_TOP_MID, 0, 0);
+    lv_obj_set_auto_realign( g_time_label, true);
+    lv_label_set_text( g_time_label, "TIME" );
+
+    // Create Voltage Label
+    g_voltage_label = lv_label_create( lv_scr_act(), NULL );
+    lv_label_set_align( g_voltage_label, LV_LABEL_ALIGN_CENTER );
+    lv_obj_align(g_voltage_label, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
+    lv_obj_set_auto_realign( g_voltage_label, true);
+    lv_label_set_text( g_voltage_label, "44 V" );
+
+    // Create Current Label
+    g_current_label = lv_label_create( lv_scr_act(), NULL );
+    lv_label_set_align( g_current_label, LV_LABEL_ALIGN_CENTER );
+    lv_obj_align(g_current_label, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
+    lv_obj_set_auto_realign( g_current_label, true);
+    lv_label_set_text( g_current_label, "0 A" );
+
     // Setup GUI Tick Timer
     const esp_timer_create_args_t lvgl_tick_timer_args =
             {
@@ -153,7 +184,13 @@ _Noreturn static void display_msg_task( void * params )
         if (msg != NULL) {
             if( 0 == strcmp("gps.time", msg->topic ) ) {
                 if (xSemaphoreTake(g_display_lock, (TickType_t)10) == pdTRUE) {
-                    lv_label_set_text_fmt( g_test_label, "[TIME: %d]", msg->int_val );
+                    struct tm ts;
+                    char time_buf[80];
+                    ts = *localtime((time_t *) &msg->int_val );
+                    strftime( time_buf, sizeof( time_buf ), "%I:%M:%S %p", &ts );
+
+                    lv_label_set_text_fmt( g_time_label, "%s", time_buf );
+
                     xSemaphoreGive(g_display_lock);
                 }
             }
