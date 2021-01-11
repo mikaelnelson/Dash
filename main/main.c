@@ -14,6 +14,7 @@
 #include "freertos/task.h"
 #include "esp_system.h"
 
+#include "console_intf.h"
 #include "display.h"
 #include "gps.h"
 #include "stepper_gauge.h"
@@ -30,12 +31,17 @@ void app_main()
     setenv("TZ", "CST6CDT,M3.2.0,M11.1.0", 1);
     tzset();
 
+    // Init Modules
+    console_intf_init();
+    speedometer_gauge_init();
+
     // Start Modules
+    console_intf_start();
     display_start();
     gps_start();
     stepper_gauge_start();
     speedometer_gauge_start();
-    can_j1939_start();
+//    can_j1939_start();
 
 //    // Handle Messages
 //

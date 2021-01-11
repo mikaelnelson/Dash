@@ -21,6 +21,7 @@
  * GLOBAL PROTOTYPES
  **********************/
 
+void speedometer_gauge_init( void );
 void speedometer_gauge_start( void );
 void speedometer_gauge_stop( void );
 

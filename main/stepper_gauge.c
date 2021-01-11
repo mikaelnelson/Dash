@@ -46,6 +46,7 @@
  **********************/
 static esp_timer_handle_t   g_update_timer;
 
+static bool                 g_in_reset;
 static uint32_t             g_current_step;
 static uint32_t             g_target_step;
 static uint32_t             g_vel;
@@ -53,11 +54,11 @@ static int8_t               g_dir;
 
 #define VELOCITY_MAX        300
 static uint16_t defaultAccelTable[][2] = {
-        {   20,             800 / MICROSTEP_PER_STEP_CNT},
-        {   50,             400 / MICROSTEP_PER_STEP_CNT},
-        {  100,             200 / MICROSTEP_PER_STEP_CNT},
-        {  150,             150 / MICROSTEP_PER_STEP_CNT},
-        {  VELOCITY_MAX,    90 / MICROSTEP_PER_STEP_CNT}
+        {   20,             800},
+        {   50,             400},
+        {  100,             200},
+        {  150,             150},
+        {  VELOCITY_MAX,    90 }
 };
 #define DEFAULT_ACCEL_TABLE_SIZE (sizeof(defaultAccelTable)/sizeof(*defaultAccelTable))
 
@@ -83,6 +84,7 @@ void stepper_gauge_start( void )
     g_target_step       = 0;
     g_vel               = 0;
     g_dir               = 0;
+    g_in_reset          = false;
 
     // Configure GPIOs
     config.intr_type    = GPIO_INTR_DISABLE;
@@ -101,6 +103,9 @@ void stepper_gauge_start( void )
             .name = "stepper_gauge_tick_timer"
             };
     esp_timer_create(&stepper_tick_timer_args, &g_update_timer);
+
+    // Reset Stepper
+    stepper_gauge_reset();
 }
 
 void stepper_gauge_stop( void )
@@ -109,11 +114,26 @@ void stepper_gauge_stop( void )
 
 void stepper_gauge_set_degree( float degree )
 {
-    // Convert Degrees to Step Position
-    int position = ( degree * STEPS_PER_DEGREE_CNT * MICROSTEP_PER_STEP_CNT );
+    ESP_LOGI( TAG, "In Reset: %d", g_in_reset );
 
-    // Set Position
-    stepper_set_position( position );
+
+    if( false == g_in_reset ) {
+        // Convert Degrees to Step Position
+        int position = (degree * STEPS_PER_DEGREE_CNT * MICROSTEP_PER_STEP_CNT);
+
+        ESP_LOGI( TAG, "Set Degree: %.1f (Pos: %d)", degree, position );
+
+        // Set Position
+        stepper_set_position( position );
+    }
+}
+
+void stepper_gauge_reset( void ) {
+    // Stop Timer
+    esp_timer_stop( g_update_timer );
+
+    // Reset Position
+    stepper_zero();
 }
 
 
@@ -133,35 +153,55 @@ static void stepper_step( int dir )
         return;
     }
 
-    gpio_set_level(PIN_DIR, dir > 0 ? 0 : 1);
+    gpio_set_level(PIN_DIR, dir > 0 ? 1 : 0);
     gpio_set_level(PIN_STEP, 1);
     vTaskDelay(pdMS_TO_TICKS(1));
     gpio_set_level(PIN_STEP, 0);
     g_current_step += dir;
 
-    ESP_LOGI(TAG, "%u", g_current_step);
-
 }
 
 static void stepper_zero( void )
 {
+    // Stop Timer
+    esp_timer_stop( g_update_timer );
+
+    // Set Target
     g_current_step = STEP_CNT_MAX - 1;
-    for (unsigned int i=0;i<STEP_CNT_MAX;i++) {
-        stepper_step(-1);
-        vTaskDelay(pdMS_TO_TICKS(1));
-    }
-    g_current_step = 0;
     g_target_step = 0;
     g_vel = 0;
-    g_dir = 0;
+    g_dir = -1;
+    g_in_reset = true;
+
+    ESP_LOGI(TAG, "%d to %d", g_current_step, g_target_step );
+
+    // Announce Started
+    PUB_NIL("stepper.reset");
+
+    // Start Advancing Stepper
+    unsigned char i = 0;
+    while( (i < DEFAULT_ACCEL_TABLE_SIZE) && (defaultAccelTable[i][0] < g_vel) ) {
+        i++;
+    }
+
+    // Schedule Next Timer
+    esp_timer_start_once( g_update_timer, defaultAccelTable[i][1]);
 }
 
 static void stepper_advance( void )
 {
+//    ESP_LOGI(TAG, "%d", g_current_step );
+
     // detect stopped state
     if( g_current_step == g_target_step && g_vel == 0) {
         // Announce Finished
-        PUB_NIL("stepper.finished");
+        if( g_in_reset ) {
+            g_in_reset = false;
+            PUB_NIL("stepper.ready");
+        }
+        else {
+            PUB_NIL("stepper.finished");
+        }
 
         g_dir = 0;
         return;
@@ -215,12 +255,23 @@ static void stepper_set_position( uint32_t position )
         position = STEP_CNT_MAX - 1;
     }
 
+    // Stop Timer
+    esp_timer_stop( g_update_timer );
+
     // Set Target
     g_target_step = position;
+
+    ESP_LOGI(TAG, "%d to %d", g_current_step, g_target_step );
 
     // Announce Started
     PUB_NIL("stepper.started");
 
     // Start Advancing Stepper
-    esp_timer_start_once( g_update_timer, 0);
+    unsigned char i = 0;
+    while( (i < DEFAULT_ACCEL_TABLE_SIZE) && (defaultAccelTable[i][0] < g_vel) ) {
+        i++;
+    }
+
+    // Schedule Next Timer
+    esp_timer_start_once( g_update_timer, defaultAccelTable[i][1]);
 }

@@ -5,9 +5,11 @@ list( APPEND LIBS lvgl_tft )
 list( APPEND LIBS lvgl_drivers )
 list( APPEND LIBS minmea)
 list( APPEND LIBS pubsub-c)
+list( APPEND LIBS console)
 
 # Source Files
 list( APPEND SRC_FILES main.c )
+list( APPEND SRC_FILES console_intf.c )
 list( APPEND SRC_FILES stepper_gauge.c )
 list( APPEND SRC_FILES speedometer_gauge.c )
 list( APPEND SRC_FILES can_j1939.c )

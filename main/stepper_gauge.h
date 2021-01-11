@@ -30,6 +30,7 @@ extern "C" {
 void stepper_gauge_start( void );
 void stepper_gauge_stop( void );
 void stepper_gauge_set_degree( float degree );
+void stepper_gauge_reset( void );
 
 #ifdef __cplusplus
 } /* extern "C" */
