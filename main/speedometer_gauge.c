@@ -115,7 +115,7 @@ _Noreturn static void msg_task( void * params )
     ps_msg_t *msg = NULL;
 
     while(true) {
-        msg = ps_get( s, 5000 );
+        msg = ps_get( s, -1 );
         if( msg != NULL) {
             if( 0 == strcmp( "stepper.started", msg->topic ) ) {
                 ESP_LOGI(TAG, "Speedo Stepper Started");

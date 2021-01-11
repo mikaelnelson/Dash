@@ -9,6 +9,7 @@ list( APPEND EXTRA_COMPONENT_DIRS components/lvgl_drivers/lvgl_tft )
 list( APPEND EXTRA_COMPONENT_DIRS components/lvgl_drivers )
 list( APPEND EXTRA_COMPONENT_DIRS components/minmea )
 list( APPEND EXTRA_COMPONENT_DIRS components/pubsub-c )
+list( APPEND EXTRA_COMPONENT_DIRS components/libj1939 )
 
 list( APPEND EXTRA_COMPONENT_DIRS $ENV{IDF_PATH}/components/console )
 

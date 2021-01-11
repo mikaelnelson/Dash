@@ -110,6 +110,7 @@ void stepper_gauge_start( void )
 
 void stepper_gauge_stop( void )
 {
+    esp_timer_delete( g_update_timer );
 }
 
 void stepper_gauge_set_degree( float degree )

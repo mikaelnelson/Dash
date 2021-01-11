@@ -3,9 +3,10 @@
 list( APPEND LIBS lvgl )
 list( APPEND LIBS lvgl_tft )
 list( APPEND LIBS lvgl_drivers )
-list( APPEND LIBS minmea)
-list( APPEND LIBS pubsub-c)
-list( APPEND LIBS console)
+list( APPEND LIBS minmea )
+list( APPEND LIBS pubsub-c )
+list( APPEND LIBS libj1939 )
+list( APPEND LIBS console )
 
 # Source Files
 list( APPEND SRC_FILES main.c )
@@ -30,10 +31,10 @@ option(BUILD_SHARED_LIBS OFF)
 option(BUILD_TESTING OFF)
 
 # Import Targets
-add_subdirectory(lib/libj1939)
+#add_subdirectory(lib/libj1939)
 
 # Include Directories
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/libj1939/include)
+#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/libj1939/include)
 
 # Link Target To Main Component
-target_link_libraries(${COMPONENT_LIB} PUBLIC j1939)
+#target_link_libraries(${COMPONENT_LIB} PUBLIC j1939)
