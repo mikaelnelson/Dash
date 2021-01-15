@@ -52,13 +52,14 @@ static uint32_t             g_target_step;
 static uint32_t             g_vel;
 static int8_t               g_dir;
 
+#define BASE_TIME_MS        50
 #define VELOCITY_MAX        300
 static uint16_t defaultAccelTable[][2] = {
-        {   20,             800},
-        {   50,             400},
-        {  100,             200},
-        {  150,             150},
-        {  VELOCITY_MAX,    90 }
+        {   20,             32 * BASE_TIME_MS},
+        {   50,             20 * BASE_TIME_MS },
+        {  100,             10 * BASE_TIME_MS },
+        {  150,             8 * BASE_TIME_MS },
+        {  VELOCITY_MAX,    5 * BASE_TIME_MS }
 };
 #define DEFAULT_ACCEL_TABLE_SIZE (sizeof(defaultAccelTable)/sizeof(*defaultAccelTable))
 
@@ -104,8 +105,7 @@ void stepper_gauge_start( void )
             };
     esp_timer_create(&stepper_tick_timer_args, &g_update_timer);
 
-    // Reset Stepper
-    stepper_gauge_reset();
+    PUB_NIL("stepper.ready");
 }
 
 void stepper_gauge_stop( void )

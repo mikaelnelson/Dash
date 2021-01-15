@@ -25,7 +25,7 @@
 #define SPEED_MPH_MAX       80
 
 #define SPEED_DEG_MIN       0
-#define SPEED_DEG_MAX       110
+#define SPEED_DEG_MAX       87
 
 /**********************
  *      TYPEDEFS
@@ -51,20 +51,27 @@ static struct {
     struct arg_end *end;
     } g_reset_args;
 
+static struct {
+    struct arg_int *degree;
+    struct arg_end *end;
+    } g_degree_args;
+
 /**********************
  *     COMMANDS
  **********************/
 static int speed_cmd(int argc, char **argv);
 static int reset_cmd(int argc, char **argv);
+static int degree_cmd(int argc, char **argv);
 
-static const esp_console_cmd_t  gc_commands[] =
+static esp_console_cmd_t  g_commands[] =
     {
     /*            command              help                                     hint        function                args */
     {   "speed",        "Set Speedometer Value",            NULL,       speed_cmd,              &g_speed_args },
-    {   "reset",        "Reset Speedometer To 0 Degrees",   NULL,       reset_cmd,              &g_reset_args }
+    {   "reset",        "Reset Speedometer To 0 Degrees",   NULL,       reset_cmd,              &g_reset_args },
+    {   "degree",       "Set Speedometer To Degree",        NULL,       degree_cmd,             &g_degree_args }
     };
 
-#define COMMANDS_CNT        ( sizeof(gc_commands)/sizeof(gc_commands[0]) )
+#define COMMANDS_CNT        ( sizeof(g_commands)/sizeof(g_commands[0]) )
 
 /**********************
  *     CONSTANTS
@@ -93,8 +100,11 @@ void speedometer_gauge_init( void )
     g_reset_args.reset = arg_lit0(NULL, NULL, NULL);
     g_reset_args.end = arg_end(2);
 
+    g_degree_args.degree = arg_intn(NULL, NULL, "<int>", SPEED_DEG_MIN, SPEED_DEG_MAX, "degrees");
+    g_degree_args.end = arg_end(2);
+
     // Register Commands
-    console_register_commands( gc_commands, COMMANDS_CNT );
+    console_register_commands( g_commands, COMMANDS_CNT );
 }
 
 void speedometer_gauge_start( void )
@@ -127,14 +137,14 @@ _Noreturn static void msg_task( void * params )
                     g_stepper_init_finished = true;
 
                     // Return to Gauge Min
-                    stepper_gauge_set_degree( STEPPER_DEGREE_MIN );
+                    stepper_gauge_set_degree( mph_to_deg(SPEED_MPH_MIN) );
                 }
             }
             else if( 0 == strcmp( "stepper.ready", msg->topic ) ) {
                 ESP_LOGI(TAG, "Speedo Stepper Ready");
                 if( false == g_stepper_init_finished ) {
                     // Set to Gauge Max
-                    stepper_gauge_set_degree( STEPPER_DEGREE_MAX );
+                    stepper_gauge_set_degree( mph_to_deg(SPEED_MPH_MAX) );
                 }
             }
         }
@@ -169,5 +179,20 @@ static int reset_cmd(int argc, char **argv)
     ESP_LOGI(TAG, "Reset Speedometer");
 
     stepper_gauge_reset();
+    return 0;
+}
+
+static int degree_cmd(int argc, char **argv)
+{
+    int nerrors = arg_parse(argc, argv, (void **) &g_degree_args);
+    if (nerrors != 0) {
+        arg_print_errors(stderr, g_degree_args.end, argv[0]);
+        return 1;
+    }
+
+    ESP_LOGI(TAG, "Set Speedometer To %d degrees",
+             g_degree_args.degree->ival[0]);
+
+    stepper_gauge_set_degree( g_degree_args.degree->ival[0] );
     return 0;
 }

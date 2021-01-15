@@ -39,8 +39,9 @@ void app_main()
     console_intf_start();
     display_start();
     gps_start();
-    stepper_gauge_start();
     speedometer_gauge_start();
+    stepper_gauge_start();
+
 //    can_j1939_start();
 
 //    // Handle Messages

@@ -13,7 +13,7 @@ extern "C" {
  *      DEFINES
  *********************/
 #define STEPPER_DEGREE_MIN  0
-#define STEPPER_DEGREE_MAX  220
+#define STEPPER_DEGREE_MAX  108
 
 /**********************
  *      TYPEDEFS
